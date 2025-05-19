@@ -1,0 +1,45 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BlogPost from '@/layouts/BlogPost.astro';
+
+console.log('Astro.params.slug:', Astro.params.slug);
+
+// Helper to turn e.g. "my-folder/post-name" → "post-name"
+export function getSlug(id: string): string {
+	const parts = id.split('/');
+	return parts[parts.length - 1];
+}
+
+export async function getStaticPaths() {
+	const enPosts = await getCollection('blog');
+	const faPosts = await getCollection('fa');
+
+      console.log('EN posts ids:', enPosts.map(p => p.id));
+  console.log('FA posts ids:', faPosts.map(p => p.id));
+
+
+    const paths = [
+    ...enPosts.map(post => ({
+      params: { slug: `blog/${getSlug(post.id)}` },
+      props: { post, lang: 'en' },
+    })),
+    ...faPosts.map(post => ({
+      params: { slug: `fa/blog/${getSlug(post.id)}` },
+      props: { post, lang: 'fa' },
+    })),
+  ];
+
+
+	return paths
+}
+
+
+
+
+const { post, lang } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BlogPost {...post.data} lang={lang} dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+	<Content />
+</BlogPost>
